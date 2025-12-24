@@ -1,4 +1,3 @@
-// context/UserContext.js
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
@@ -7,14 +6,14 @@ const UserContext = createContext(null);
 
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // 🔑 IMPORTANT
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    setLoading(false); // 🔑 hydration finished
+    setLoading(false);
   }, []);
 
   const login = (userData) => {
