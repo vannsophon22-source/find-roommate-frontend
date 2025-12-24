@@ -86,29 +86,41 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-500 p-6">
       <div className="bg-white/20 backdrop-blur-md p-10 rounded-3xl shadow-2xl w-full max-w-md transform transition duration-500 hover:scale-105">
         {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
+        
         <div className="flex justify-center mb-6">
           <div className="w-32 h-32 bg-white/30 rounded-full flex items-center justify-center">
             <span className="text-white text-3xl font-bold">Logo</span>
           </div>
         </div>
+        
         <h2 className="text-4xl font-bold mb-8 text-center text-white drop-shadow-lg">Login</h2>
+        
         <form onSubmit={handleLogin} className="space-y-4">
-          <InputField 
-            label="Email" 
-            placeholder="Enter your email" 
-            value={email} 
-            setValue={setEmail} 
-            type="email" 
-            disabled={loading} 
-          />
-          <InputField 
-            label="Password" 
-            placeholder="Enter your password" 
-            value={password} 
-            setValue={setPassword} 
-            type="password" 
-            disabled={loading} 
-          />
+          <div>
+            <label className="block mb-2 font-medium text-white drop-shadow-sm">Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 backdrop-blur-sm transition"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block mb-2 font-medium text-white drop-shadow-sm">Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 backdrop-blur-sm transition"
+              required
+            />
+          </div>
 
           <div className="flex justify-between items-center">
             <button
@@ -151,7 +163,6 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Demo Accounts Info */}
         <div className="mt-8 p-4 bg-white/10 rounded-xl">
           <p className="text-sm text-white/80 text-center mb-2">Demo Accounts:</p>
           <div className="text-xs text-white/70 space-y-1">
@@ -162,26 +173,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ADD THESE COMPONENTS BACK
-function InputField({ label, placeholder, value, setValue, type = "text", disabled = false }) {
-  return (
-    <div>
-      <label className="block mb-2 font-medium text-white drop-shadow-sm">{label}</label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        disabled={disabled}
-        className={`w-full px-4 py-3 rounded-xl border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 backdrop-blur-sm transition ${
-          disabled ? "opacity-70 cursor-not-allowed" : ""
-        }`}
-        required
-      />
     </div>
   );
 }
