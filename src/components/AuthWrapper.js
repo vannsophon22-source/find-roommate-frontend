@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useUser } from "@/context/UserContext";
@@ -9,32 +10,54 @@ export default function AuthWrapper({ children }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (loading) return; // Wait for hydration
-    
-    // If no user AND not on auth pages, redirect to login
-    if (!user && pathname !== "/login" && pathname !== "/register") {
+    if (loading) return;
+
+    const publicPaths = ["/login", "/register", "/forgot-password"];
+    const isPublicPath = publicPaths.includes(pathname);
+
+    if (!user && !isPublicPath) {
+      // Redirect to login if not authenticated and not on public page
       router.replace('/login');
-    }
-    
-    // If user exists AND is on auth pages, redirect to home/dashboard
-    if (user && (pathname === "/login" || pathname === "/register")) {
-      router.replace('/'); // or '/dashboard'
+    } else if (user && isPublicPath) {
+      // Redirect to appropriate dashboard if authenticated and trying to access auth pages
+      if (user.role === 'admin') {
+        router.replace('/dashboard/admin');
+      } else if (user.role === 'owner') {
+        router.replace('/dashboard/owner');
+      } else {
+        router.replace('/dashboard/user/homepage');
+      }
     }
   }, [user, loading, pathname, router]);
 
-  // Show loading state while checking authentication
+  // Show loading state
   if (loading) {
-    return null; // or return a loading spinner component
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // For auth pages, always show them (redirection logic is in useEffect)
-  if (pathname === "/login" || pathname === "/register") {
+  // Allow access to public paths without authentication
+  const publicPaths = ["/login", "/register", "/forgot-password"];
+  if (publicPaths.includes(pathname)) {
     return children;
   }
 
-  // For protected pages, only show if user exists
+  // Protect private routes
   if (!user) {
-    return null; // or a loading spinner
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
   }
 
   return children;
