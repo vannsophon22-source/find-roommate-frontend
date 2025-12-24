@@ -2,36 +2,30 @@
 
 import { useState, useRef, useEffect } from "react";
 import { 
-  Camera, Upload, Save, User, Mail, UserCircle,
-  Loader2, CheckCircle, Edit2, ArrowLeft, ChevronLeft
+  Camera, User, Mail, UserCircle, Edit2, ChevronLeft, CheckCircle
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const fileInputRef = useRef(null);
 
-  // Load user from localStorage or set defaults
+  // Load user from localStorage
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("userProfile");
-    return stored
-      ? JSON.parse(stored)
-      : {
-          name: "",
-          email: "",
-          gender: "",
-          avatar: "/users/default-avatar.svg",
-        };
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
   });
 
-  const [avatarPreview, setAvatarPreview] = useState(user.avatar);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar || "/users/default-avatar.svg");
   const [avatarFile, setAvatarFile] = useState(null);
-  const [name, setName] = useState(user.name);
-  const [email, setEmail] = useState(user.email);
-  const [gender, setGender] = useState(user.gender);
+  const [name, setName] = useState(user?.name || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [gender, setGender] = useState(user?.gender || "");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Save changes to localStorage
   const saveToLocal = (newUser) => {
+    localStorage.setItem("user", JSON.stringify(newUser));
     localStorage.setItem("userProfile", JSON.stringify(newUser));
     setUser(newUser);
   };
@@ -55,7 +49,6 @@ export default function ProfilePage() {
 
   const handleAvatarUpload = () => {
     if (!avatarFile) return alert("Please select an image first.");
-
     const reader = new FileReader();
     reader.onload = () => {
       const newUser = { ...user, avatar: reader.result };
@@ -77,11 +70,11 @@ export default function ProfilePage() {
       setIsSaving(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2000);
-    }, 500); // simulate saving delay
+    }, 500);
   };
 
-  const handleBack = () => {
-    window.history.back();
+  const handleSignOut = () => {
+    router.push("/login");
   };
 
   return (
@@ -90,7 +83,7 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <button
-            onClick={handleBack}
+            onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
           >
             <ChevronLeft size={24} />
@@ -107,9 +100,9 @@ export default function ProfilePage() {
         )}
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Avatar Section */}
+          {/* Avatar & Info */}
           <div className="md:col-span-1 bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-            <div className="text-center mb-6">
+            <div className="text-center mb-6 relative">
               <div className="relative w-48 h-48 mx-auto rounded-full overflow-hidden border-4 border-white shadow-xl">
                 <img src={avatarPreview} alt="Profile" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
@@ -145,16 +138,23 @@ export default function ProfilePage() {
 
             {/* Account Info */}
             <div className="mt-8 pt-8 border-t border-gray-100 space-y-3 text-gray-600">
-              <div className="flex items-center gap-3"><User size={18} /><span>{user.name || "Not set"}</span></div>
-              <div className="flex items-center gap-3"><Mail size={18} /><span>{user.email}</span></div>
-              <div className="flex items-center gap-3"><UserCircle size={18} /><span>{user.gender || "Not specified"}</span></div>
+              <div className="flex items-center gap-3"><User size={18} /><span>{user?.name || "Not set"}</span></div>
+              <div className="flex items-center gap-3"><Mail size={18} /><span>{user?.email}</span></div>
+              <div className="flex items-center gap-3"><UserCircle size={18} /><span>{user?.gender || "Not specified"}</span></div>
             </div>
+
+            {/* Sign Out Button */}
+            <button
+              onClick={handleSignOut}
+              className="mt-6 w-full py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
 
           {/* Profile Form */}
           <div className="md:col-span-2 bg-white rounded-2xl shadow-lg p-8">
             <div className="space-y-6">
-              {/* Name */}
               <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"><User size={16} />Full Name</label>
                 <input
@@ -165,7 +165,6 @@ export default function ProfilePage() {
                 />
               </div>
 
-              {/* Email */}
               <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"><Mail size={16} />Email Address</label>
                 <input
@@ -177,7 +176,6 @@ export default function ProfilePage() {
                 />
               </div>
 
-              {/* Gender */}
               <div className="group">
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2"><UserCircle size={16} />Gender</label>
                 <select
@@ -193,7 +191,6 @@ export default function ProfilePage() {
                 </select>
               </div>
 
-              {/* Save Button */}
               <div className="pt-6 border-t border-gray-100">
                 <button
                   onClick={handleProfileUpdate}
