@@ -32,8 +32,15 @@ export default function LoginPage() {
     setLoading(true);
     setAlert(null);
 
+    // Validation
     if (!email || !password) {
       setAlert({ message: "Please enter email and password!", type: "error" });
+      setLoading(false);
+      return;
+    }
+
+    if (!email.includes("@")) {
+      setAlert({ message: "Please enter a valid email!", type: "error" });
       setLoading(false);
       return;
     }
@@ -86,16 +93,18 @@ export default function LoginPage() {
       return;
     }
     
+    if (!email.includes("@")) {
+      setAlert({ message: "Please enter a valid email!", type: "error" });
+      return;
+    }
+    
     setAlert({ 
       message: `Password reset link sent to ${email}. Check your email!`, 
       type: "success" 
     });
-    
-    // Mock password reset logic
-    console.log(`Password reset requested for: ${email}`);
   };
 
-  // If user is already logged in, show loading screen
+  // If user exists, show loading (will redirect in useEffect)
   if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-500">
