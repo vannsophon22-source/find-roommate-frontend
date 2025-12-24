@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -44,14 +45,34 @@ export default function LoginPage() {
 
     setAlert({ message: `Welcome ${loggedInUser.name} (${role})!`, type: "success" });
 
-    // Redirect based on role
+    // Redirect based on role - ALL non-admin/owner go to user homepage
     setTimeout(() => {
-      if (role === "admin") router.push("/dashboard/admin");
-      else if (role === "owner") router.push("/dashboard/owner");
-      else router.push("/dashboard/user/homepage");
+      if (role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (role === "owner") {
+        router.push("/dashboard/owner");
+      } else {
+        // All regular users go to user homepage
+        router.push("/dashboard/user/homepage");
+      }
     }, 1000);
 
     setLoading(false);
+  };
+
+  const handleForgotPassword = () => {
+    if (!email) {
+      setAlert({ message: "Please enter your email first!", type: "error" });
+      return;
+    }
+    
+    setAlert({ 
+      message: `Password reset link sent to ${email}. Check your email!`, 
+      type: "success" 
+    });
+    
+    // Mock password reset logic
+    console.log(`Password reset requested for: ${email}`);
   };
 
   return (
@@ -61,8 +82,32 @@ export default function LoginPage() {
         <img src="/images/logo.png" alt="Logo" className="w-35 h-24 mx-auto mb-6 drop-shadow-xl" />
         <h2 className="text-4xl font-bold mb-8 text-center text-white drop-shadow-lg">Login</h2>
         <form onSubmit={handleLogin} className="space-y-4">
-          <InputField label="Email" placeholder="Enter your email" value={email} setValue={setEmail} type="email" disabled={loading} />
-          <InputField label="Password" placeholder="Enter your password" value={password} setValue={setPassword} type="password" disabled={loading} />
+          <InputField 
+            label="Email" 
+            placeholder="Enter your email" 
+            value={email} 
+            setValue={setEmail} 
+            type="email" 
+            disabled={loading} 
+          />
+          <InputField 
+            label="Password" 
+            placeholder="Enter your password" 
+            value={password} 
+            setValue={setPassword} 
+            type="password" 
+            disabled={loading} 
+          />
+
+          <div className="flex justify-between items-center">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-sm text-white hover:text-yellow-200 transition underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
 
           <button
             type="submit"
@@ -74,6 +119,29 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-white/30">
+          <p className="text-center text-white/80 mb-4">
+            Don't have an account?
+          </p>
+          <Link 
+            href="/register" 
+            className="block w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-2xl shadow-lg text-center transition transform hover:scale-105 hover:shadow-2xl"
+          >
+            Create New Account
+          </Link>
+        </div>
+
+        {/* Demo Accounts Info */}
+        <div className="mt-8 p-4 bg-white/10 rounded-xl">
+          <p className="text-sm text-white/80 text-center mb-2">Demo Accounts:</p>
+          <div className="text-xs text-white/70 space-y-1">
+            <p>• Regular User: any email (e.g., user@example.com)</p>
+            <p>• Admin: admin@example.com</p>
+            <p>• Owner: owner@example.com</p>
+            <p className="mt-1">Password: any (not validated in demo)</p>
+          </div>
+        </div>
       </div>
     </div>
   );
