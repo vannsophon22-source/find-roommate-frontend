@@ -1,3 +1,4 @@
+// /app/login/page.js
 "use client";
 
 import { useState } from "react";
@@ -11,11 +12,12 @@ export default function LoginPage() {
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setUser } = useUser() || {};
+  const { setUser } = useUser();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setAlert(null);
 
     if (!email || !password) {
       setAlert({ message: "Please enter email and password!", type: "error" });
@@ -23,41 +25,46 @@ export default function LoginPage() {
       return;
     }
 
-    // Mock login logic based on email
-    let role = "user";
-    if (email === "admin@example.com") role = "admin";
-    else if (email === "owner@example.com") role = "owner";
+    try {
+      // Mock login logic based on email
+      let role = "user";
+      if (email === "admin@example.com") role = "admin";
+      else if (email === "owner@example.com") role = "owner";
 
-    const loggedInUser = {
-      id: 1,
-      name: email.split("@")[0],
-      email,
-      avatar: "/users/default-avatar.svg",
-      role,
-    };
+      const loggedInUser = {
+        id: 1,
+        name: email.split("@")[0],
+        email,
+        avatar: "/users/default-avatar.svg",
+        role,
+      };
 
-    // Save to localStorage
-    localStorage.setItem("user", JSON.stringify(loggedInUser));
-    localStorage.setItem("isLoggedIn", "true");
+      // Save to localStorage
+      localStorage.setItem("user", JSON.stringify(loggedInUser));
+      localStorage.setItem("isLoggedIn", "true");
 
-    // Update context
-    if (setUser) setUser(loggedInUser);
+      // Update context
+      if (setUser) setUser(loggedInUser);
 
-    setAlert({ message: `Welcome ${loggedInUser.name} (${role})!`, type: "success" });
+      setAlert({ message: `Welcome ${loggedInUser.name} (${role})!`, type: "success" });
 
-    // Redirect based on role - ALL non-admin/owner go to user homepage
-    setTimeout(() => {
-      if (role === "admin") {
-        router.push("/dashboard/admin");
-      } else if (role === "owner") {
-        router.push("/dashboard/owner");
-      } else {
-        // All regular users go to user homepage
-        router.push("/dashboard/user/homepage");
-      }
-    }, 1000);
+      // Redirect based on role
+      setTimeout(() => {
+        if (role === "admin") {
+          router.push("/dashboard/admin");
+        } else if (role === "owner") {
+          router.push("/dashboard/owner");
+        } else {
+          router.push("/dashboard/user/homepage");
+        }
+      }, 1000);
 
-    setLoading(false);
+    } catch (error) {
+      setAlert({ message: "Login failed. Please try again.", type: "error" });
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -70,40 +77,69 @@ export default function LoginPage() {
       message: `Password reset link sent to ${email}. Check your email!`, 
       type: "success" 
     });
-    
-    // Mock password reset logic
-    console.log(`Password reset requested for: ${email}`);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-500 p-6">
-      <div className="bg-white/20 backdrop-blur-md p-10 rounded-3xl shadow-2xl w-full max-w-md transform transition duration-500 hover:scale-105">
-        {alert && <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />}
-        <img src="/images/logo.png" alt="Logo" className="w-35 h-24 mx-auto mb-6 drop-shadow-xl" />
-        <h2 className="text-4xl font-bold mb-8 text-center text-white drop-shadow-lg">Login</h2>
+      <div className="bg-white/20 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-md">
+        {alert && (
+          <div className={`mb-4 px-4 py-3 rounded-lg ${
+            alert.type === "success" 
+              ? "bg-green-100 text-green-800" 
+              : "bg-red-100 text-red-800"
+          }`}>
+            <div className="flex justify-between items-center">
+              <span>{alert.message}</span>
+              <button 
+                onClick={() => setAlert(null)} 
+                className="ml-2 font-bold"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-center mb-6">
+          <div className="w-24 h-24 bg-white/30 rounded-full flex items-center justify-center">
+            <span className="text-white text-2xl font-bold">Logo</span>
+          </div>
+        </div>
+        
+        <h2 className="text-3xl font-bold mb-6 text-center text-white">Login</h2>
+        
         <form onSubmit={handleLogin} className="space-y-4">
-          <InputField 
-            label="Email" 
-            placeholder="Enter your email" 
-            value={email} 
-            setValue={setEmail} 
-            type="email" 
-            disabled={loading} 
-          />
-          <InputField 
-            label="Password" 
-            placeholder="Enter your password" 
-            value={password} 
-            setValue={setPassword} 
-            type="password" 
-            disabled={loading} 
-          />
+          <div>
+            <label className="block mb-2 text-white">Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block mb-2 text-white">Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              required
+            />
+          </div>
 
           <div className="flex justify-between items-center">
             <button
               type="button"
               onClick={handleForgotPassword}
-              className="text-sm text-white hover:text-yellow-200 transition underline"
+              className="text-sm text-white hover:text-yellow-200 transition"
             >
               Forgot Password?
             </button>
@@ -112,28 +148,35 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-gradient-to-r from-green-500 to-green-700 text-white font-semibold py-3 rounded-2xl shadow-lg transition transform ${
-              loading ? "opacity-70 cursor-not-allowed" : "hover:scale-105 hover:shadow-2xl"
+            className={`w-full bg-blue-600 text-white font-semibold py-3 rounded-xl transition ${
+              loading ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700"
             }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Logging in...
+              </span>
+            ) : "Login"}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-white/30">
-          <p className="text-center text-white/80 mb-4">
+        <div className="mt-6 pt-6 border-t border-white/30">
+          <p className="text-center text-white/80 mb-3">
             Don't have an account?
           </p>
           <Link 
             href="/register" 
-            className="block w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold py-3 rounded-2xl shadow-lg text-center transition transform hover:scale-105 hover:shadow-2xl"
+            className="block w-full bg-white/20 text-white font-semibold py-3 rounded-xl text-center transition hover:bg-white/30"
           >
             Create New Account
           </Link>
         </div>
 
-        {/* Demo Accounts Info */}
-        <div className="mt-8 p-4 bg-white/10 rounded-xl">
+        <div className="mt-6 p-4 bg-white/10 rounded-xl">
           <p className="text-sm text-white/80 text-center mb-2">Demo Accounts:</p>
           <div className="text-xs text-white/70 space-y-1">
             <p>• Regular User: any email (e.g., user@example.com)</p>
@@ -142,38 +185,6 @@ export default function LoginPage() {
             <p className="mt-1">Password: any (not validated in demo)</p>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function InputField({ label, placeholder, value, setValue, type = "text", disabled = false }) {
-  return (
-    <div>
-      <label className="block mb-2 font-medium text-white drop-shadow-sm">{label}</label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        disabled={disabled}
-        className={`w-full px-4 py-3 rounded-xl border border-white/30 bg-white/20 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300 backdrop-blur-sm transition ${
-          disabled ? "opacity-70 cursor-not-allowed" : ""
-        }`}
-        required
-      />
-    </div>
-  );
-}
-
-function Alert({ message, type = "success", onClose }) {
-  const bgColor = type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-
-  return (
-    <div className={`fixed top-6 right-6 px-6 py-4 rounded-lg shadow-lg ${bgColor} z-50`}>
-      <div className="flex items-center justify-between">
-        <span>{message}</span>
-        <button onClick={onClose} className="ml-4 font-bold text-xl leading-none hover:opacity-70 transition">&times;</button>
       </div>
     </div>
   );
